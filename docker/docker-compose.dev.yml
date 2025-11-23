@@ -1,7 +1,5 @@
-version: '3.8'
-
 # Development-specific overrides for docker-compose.yml
-# Usage: docker-compose -f docker/docker-compose.yml -f docker/docker-compose.dev.yml up
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 
 services:
   postgres:
@@ -19,7 +17,8 @@ services:
       - DB_NAME=quality_tracker_db_dev
       - DB_USER=dev_user
       - DB_PASSWORD=dev_password
-    command: ["npm", "run", "dev"]
+    # Use PM2 in development mode with watch enabled
+    command: ["pm2-runtime", "start", "ecosystem.config.js", "--watch"]
     volumes:
       - ../packages/backend:/app/packages/backend
       - /app/packages/backend/node_modules

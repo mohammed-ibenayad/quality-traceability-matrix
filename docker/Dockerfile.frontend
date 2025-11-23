@@ -7,13 +7,14 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy workspace root package.json
+# Copy workspace configuration files
 COPY package.json package-lock.json ./
 
-# Copy frontend package files
-COPY packages/frontend/package.json ./packages/frontend/
+# Copy all workspace package.json files to enable workspace resolution
+COPY packages/frontend/package.json ./packages/frontend/package.json
+COPY packages/backend/package.json ./packages/backend/package.json
 
-# Install dependencies (will use workspace configuration)
+# Install dependencies (workspaces need all packages)
 RUN npm ci
 
 # Copy frontend source code

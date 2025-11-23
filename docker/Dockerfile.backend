@@ -10,14 +10,15 @@ RUN npm install -g pm2
 # Create app directory
 WORKDIR /app
 
-# Copy workspace root package.json
-COPY package.json package-lock.json* ./
+# Copy workspace configuration files
+COPY package.json package-lock.json ./
 
-# Copy backend package files
-COPY packages/backend/package.json ./packages/backend/
+# Copy all workspace package.json files to enable workspace resolution
+COPY packages/backend/package.json ./packages/backend/package.json
+COPY packages/frontend/package.json ./packages/frontend/package.json
 
-# Install dependencies (will use workspace configuration)
-RUN npm ci --only=production
+# Install ALL dependencies (workspaces need all packages)
+RUN npm ci
 
 # Copy backend source code
 COPY packages/backend ./packages/backend/
@@ -30,7 +31,7 @@ EXPOSE 3001 3002
 
 # Health check for API server
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3002/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"
+  CMD node -e "require('http').get('http://localhost:3002/api/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"
 
 # Start both servers using PM2
 CMD ["pm2-runtime", "start", "ecosystem.config.js"]
