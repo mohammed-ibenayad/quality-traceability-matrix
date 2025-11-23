@@ -8,19 +8,19 @@ async function seedDatabase() {
     console.log('🌱 Seeding database...');
 
     await transaction(async (client) => {
-      // Create default user
+      // Create default user with password "admin123"
       await client.query(`
-        INSERT INTO users (id, email, full_name, is_active, email_verified)
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO users (id, email, full_name, password_hash, is_active, email_verified)
+        VALUES ($1, $2, $3, crypt($4, gen_salt('bf')), $5, $6)
         ON CONFLICT (id) DO NOTHING
-      `, [DEFAULT_USER_ID, 'admin@qualitytracker.local', 'Admin User', true, true]);
+      `, [DEFAULT_USER_ID, 'admin@qualitytracker.local', 'Admin User', 'admin123', true, true]);
 
       // Create default workspace
       await client.query(`
         INSERT INTO workspaces (id, name, slug, description, owner_id, is_active)
         VALUES ($1, $2, $3, $4, $5, $6)
         ON CONFLICT (id) DO NOTHING
-      `, [DEFAULT_WORKSPACE_ID, 'Default Workspace', 'default-workspace', 
+      `, [DEFAULT_WORKSPACE_ID, 'Default Workspace', 'default-workspace',
           'Default workspace for single-user mode', DEFAULT_USER_ID, true]);
 
       // Add user to workspace
@@ -33,9 +33,10 @@ async function seedDatabase() {
 
     console.log('✅ Database seeded successfully!');
     console.log('📧 Default user: admin@qualitytracker.local');
+    console.log('🔑 Default password: admin123');
     console.log('🏢 Default workspace: Default Workspace');
     console.log('🆔 Workspace ID:', DEFAULT_WORKSPACE_ID);
-    
+
     process.exit(0);
   } catch (error) {
     console.error('❌ Seeding failed:', error.message);
