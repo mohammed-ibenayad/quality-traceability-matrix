@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'quality-tracker-webhook',
       script: 'webhook-server.js',
-      cwd: '/home/asal/quality-traceability-matrix/packages/backend',
+      // cwd removed - uses current directory (works for both local and Docker)
       env: {
         NODE_ENV: 'production',
         PORT: 3001,
@@ -18,7 +18,7 @@ module.exports = {
     {
       name: 'quality-tracker-api',
       script: 'api-server.js',
-      cwd: '/home/asal/quality-traceability-matrix/packages/backend',
+      // cwd removed - uses current directory (works for both local and Docker)
       env: {
         NODE_ENV: 'production',
         API_PORT: 3002,
