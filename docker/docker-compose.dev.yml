@@ -1,0 +1,38 @@
+version: '3.8'
+
+# Development-specific overrides for docker-compose.yml
+# Usage: docker-compose -f docker/docker-compose.yml -f docker/docker-compose.dev.yml up
+
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: quality_tracker_db_dev
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
+
+  backend:
+    environment:
+      - NODE_ENV=development
+      - LOG_LEVEL=debug
+      - DB_NAME=quality_tracker_db_dev
+      - DB_USER=dev_user
+      - DB_PASSWORD=dev_password
+    command: ["npm", "run", "dev"]
+    volumes:
+      - ../packages/backend:/app/packages/backend
+      - /app/packages/backend/node_modules
+
+  frontend:
+    build:
+      target: builder  # Use builder stage for development
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../packages/frontend:/app/packages/frontend
+      - /app/packages/frontend/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:3002
+      - REACT_APP_WEBHOOK_URL=http://localhost:3001

@@ -1,40 +1,44 @@
 {
   "name": "quality-traceability-matrix",
+  "version": "1.0.0",
+  "description": "Quality Traceability Matrix - A comprehensive test management and requirements traceability system",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "workspaces": [
+    "packages/frontend",
+    "packages/backend"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@headlessui/react": "^2.2.0",
-    "@octokit/rest": "^22.0.0",
-    "axios": "^1.6.8",
-    "jszip": "^3.10.1",
-    "lucide-react": "^0.482.0",
-    "octokit": "^4.1.4",
-    "papaparse": "^5.5.3",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-router-dom": "^7.3.0",
-    "recharts": "^2.15.1",
-    "socket.io-client": "^4.8.1"
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "npm run dev --workspace=packages/frontend",
+    "dev:backend": "npm run dev --workspace=packages/backend",
+    "dev:api": "npm run api:dev --workspace=packages/backend",
+    "build": "npm run build --workspace=packages/frontend",
+    "build:all": "npm run build --workspaces --if-present",
+    "start:backend": "npm run start --workspace=packages/backend",
+    "start:api": "npm run api --workspace=packages/backend",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "db:test": "npm run db:test --workspace=packages/backend",
+    "db:seed": "npm run db:seed --workspace=packages/backend",
+    "db:migrate": "npm run db:migrate --workspace=packages/backend"
   },
   "devDependencies": {
-    "@eslint/js": "^9.21.0",
-    "@types/react": "^19.0.10",
-    "@types/react-dom": "^19.0.4",
-    "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.4.21",
-    "eslint": "^9.21.0",
-    "eslint-plugin-react-hooks": "^5.1.0",
-    "eslint-plugin-react-refresh": "^0.4.19",
-    "globals": "^15.15.0",
-    "postcss": "^8.5.3",
-    "tailwindcss": "^3.3.5",
-    "vite": "^6.2.0"
-  }
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mohammed-ibenayad/quality-traceability-matrix.git"
+  },
+  "keywords": [
+    "quality-assurance",
+    "test-management",
+    "requirements-traceability",
+    "monorepo"
+  ],
+  "author": "Mohammed Ibenayad",
+  "license": "MIT"
 }
