@@ -357,7 +357,8 @@ class DataStoreService {
     if (isProduction) {
       // In production, use nginx proxy (same as apiService.js does)
       // NO PORT - nginx handles the routing to port 3002 internally
-      return `http://${window.location.hostname}/api`;
+      // Don't include /api here - it's added by the service methods
+      return `http://${window.location.hostname}`;
     }
 
     // For local development - direct to API server port

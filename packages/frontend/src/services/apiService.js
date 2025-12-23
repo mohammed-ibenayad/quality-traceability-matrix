@@ -7,23 +7,24 @@
 const getApiBaseUrl = () => {
   // Check if we're in production (deployed)
   const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-  
+
   if (isProduction) {
     // In production, use nginx proxy (no port - goes through nginx)
-    return `http://${window.location.hostname}/api`;
+    // Don't include /api here - it's added by the service methods
+    return `http://${window.location.hostname}`;
   }
-  
+
   // For local development
   // Try Vite variable first (for Vite builds)
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
-  
+
   // Try React App variable (for Create React App)
   if (process.env.REACT_APP_API_URL) {
     return process.env.REACT_APP_API_URL;
   }
-  
+
   // Default fallback for development
   return 'http://localhost:3002';
 };
@@ -55,7 +56,7 @@ export const importDataToDatabase = async (data) => {
     }
 
     // ✅ INCLUDE AUTHORIZATION HEADER
-    const response = await fetch(`${API_BASE_URL}/import`, {
+    const response = await fetch(`${API_BASE_URL}/api/import`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -8,7 +8,8 @@ const getApiBaseUrl = () => {
 
   if (isProduction) {
     // In production, use nginx proxy (no port - goes through nginx)
-    return `http://${window.location.hostname}/api`;
+    // Don't include /api here - it's added by the service methods
+    return `http://${window.location.hostname}`;
   }
 
   // For local development
