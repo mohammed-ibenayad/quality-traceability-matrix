@@ -224,18 +224,22 @@ info "Current PM2 status:"
 pm2 status
 
 # Check if services are actually running (not crash-looping)
-WEBHOOK_STATUS=$(pm2 jlist | grep -A 10 "quality-tracker-webhook" | grep '"status"' | cut -d'"' -f4)
-API_STATUS=$(pm2 jlist | grep -A 10 "quality-tracker-api" | grep '"status"' | cut -d'"' -f4)
+# Use pm2 jlist to get JSON output and parse it properly
+WEBHOOK_STATUS=$(pm2 jlist | jq -r '.[] | select(.name=="quality-tracker-webhook") | .pm2_env.status' 2>/dev/null || echo "unknown")
+API_STATUS=$(pm2 jlist | jq -r '.[] | select(.name=="quality-tracker-api") | .pm2_env.status' 2>/dev/null || echo "unknown")
+
+info "Webhook service status: $WEBHOOK_STATUS"
+info "API service status: $API_STATUS"
 
 if [ "$WEBHOOK_STATUS" != "online" ]; then
-    warning "Webhook service status: $WEBHOOK_STATUS"
+    warning "Webhook service is not online (status: $WEBHOOK_STATUS)"
     info "Showing last 30 lines of webhook server logs:"
     pm2 logs quality-tracker-webhook --lines 30 --nostream || true
     error_exit "Webhook server is not running properly. Check logs above."
 fi
 
 if [ "$API_STATUS" != "online" ]; then
-    warning "API service status: $API_STATUS"
+    warning "API service is not online (status: $API_STATUS)"
     info "Showing last 30 lines of API server logs:"
     pm2 logs quality-tracker-api --lines 30 --nostream || true
     error_exit "API server is not running properly. Check logs above."
