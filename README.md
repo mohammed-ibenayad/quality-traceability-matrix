@@ -1,4 +1,4 @@
-# Quality Traceability Matrix
+# Quality Tracker
 
 A comprehensive application for tracking the relationship between requirements and test cases in software development projects. This tool helps teams maintain visibility into test coverage, automation status, and release readiness.
 
@@ -18,283 +18,256 @@ A comprehensive application for tracking the relationship between requirements a
 This project uses a monorepo structure with npm workspaces to manage both frontend and backend applications.
 
 ```
-quality-traceability-matrix/
+asaltech-quality-tracker/
 ├── packages/
 │   ├── frontend/           # React application (Vite + React 19)
 │   │   ├── src/
 │   │   │   ├── components/ # Reusable UI components
-│   │   │   │   ├── Dashboard/
-│   │   │   │   ├── TraceabilityMatrix/
-│   │   │   │   ├── TestExecution/
-│   │   │   │   ├── Requirements/
-│   │   │   │   ├── TestCases/
-│   │   │   │   └── Layout/
 │   │   │   ├── pages/      # Page components
 │   │   │   ├── hooks/      # Custom React hooks
-│   │   │   ├── contexts/   # React context
-│   │   │   ├── api/        # API integration
-│   │   │   ├── utils/      # Utility functions
-│   │   │   └── data/       # Sample data
-│   │   ├── public/         # Static assets
-│   │   └── index.html      # HTML entry point
+│   │   │   └── api/        # API integration
+│   │   └── dist/           # Build output
 │   │
 │   └── backend/            # Node.js/Express API servers
-│       ├── api/
-│       │   ├── routes/     # API endpoints
-│       │   ├── controllers/
-│       │   └── middleware/
-│       ├── database/
-│       │   ├── init/       # Schema SQL files
-│       │   └── seeds/      # Seed data
+│       ├── api/            # API endpoints and controllers
+│       ├── database/       # Database schema and seeds
 │       ├── api-server.js   # API server (port 3002)
 │       └── webhook-server.js # Webhook server (port 3001)
 │
 ├── scripts/                # Deployment and utility scripts
+│   ├── deploy-backend.sh   # Backend deployment script
+│   ├── deploy-frontend.sh  # Frontend deployment script
+│   └── setup-database.sh   # Database setup automation
+│
 ├── docs/                   # Documentation
-├── docker/                 # Docker configurations
-├── package.json            # Root workspace configuration
-└── .env.example            # Environment variables template
+└── docker/                 # Docker configurations
 ```
 
-## 📦 Packages
+## 📦 Technology Stack
 
-### Frontend (`packages/frontend`)
-- **Framework**: React 19 with Vite
-- **Styling**: TailwindCSS 3
-- **Routing**: React Router 7
-- **Visualization**: Recharts
-- **Real-time**: Socket.io Client
-- **HTTP**: Axios
-- **GitHub**: Octokit
+### Frontend
+- React 19 with Vite
+- TailwindCSS 3
+- React Router 7
+- Recharts for visualization
+- Socket.io Client for real-time updates
+- Axios for HTTP requests
 
-### Backend (`packages/backend`)
-- **Framework**: Node.js with Express
-- **Database**: PostgreSQL (19 tables)
-- **Real-time**: Socket.io
-- **Auth**: JWT
-- **Process Management**: PM2
+### Backend
+- Node.js with Express
+- PostgreSQL (19 tables)
+- Socket.io for WebSockets
+- JWT for authentication
+- PM2 for process management
 
-**Two Servers:**
-- **Webhook Server** (Port 3001): Receives test execution results
-- **API Server** (Port 3002): REST API for CRUD operations
+### DevOps
+- Docker & Docker Compose
+- Nginx for production
+- npm Workspaces (monorepo)
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
 
 - Node.js >= 16.0.0
 - npm >= 8.0.0
-- PostgreSQL >= 12 (for production)
+- PostgreSQL >= 12
+- PM2 (for production deployment)
 
-### Installation
+### Development Setup
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/mohammed-ibenayad/quality-traceability-matrix.git
-   cd quality-traceability-matrix
+   git clone https://github.com/mohammed-ibenayad/asaltech-quality-tracker.git
+   cd asaltech-quality-tracker
    ```
 
-2. **Install all dependencies**
+2. **Install dependencies**
    ```bash
    npm install
    ```
-   This installs dependencies for both frontend and backend using npm workspaces.
 
-3. **Set up environment variables**
+3. **Set up database (automated)**
    ```bash
-   # Copy environment templates
-   cp .env.example .env
-   cp packages/frontend/.env.example packages/frontend/.env
-   cp packages/backend/.env.example packages/backend/.env
+   ./scripts/setup-database.sh
    ```
+   This will:
+   - Start PostgreSQL
+   - Create database and user
+   - Generate `.env` file with credentials
+   - Test the connection
 
-   Edit the `.env` files with your configuration (database credentials, API URLs, etc.).
-
-4. **Set up the database** (if using PostgreSQL)
+4. **Start development servers**
    ```bash
-   # Run database migration
-   npm run db:migrate
-
-   # Seed with sample data (optional)
-   npm run db:seed
-
-   # Test database connection
-   npm run db:test
+   npm run dev
    ```
+   This starts:
+   - Frontend at http://localhost:5173
+   - Webhook Server at http://localhost:3001
+   - API Server at http://localhost:3002
 
-### Development
+## 🚢 Production Deployment
 
-**Start both frontend and backend simultaneously:**
+### Automated Deployment (Recommended)
+
+The project includes automated deployment scripts that handle everything:
+
+1. **Deploy Backend**
+   ```bash
+   ./scripts/deploy-backend.sh [branch-name]
+   ```
+   This will:
+   - Clone repository to `~/quality-tracker-backend`
+   - Install dependencies
+   - Auto-create `.env` if missing
+   - Start services with PM2
+   - Run health checks
+
+2. **Deploy Frontend**
+   ```bash
+   ./scripts/deploy-frontend.sh [branch-name]
+   ```
+   This will:
+   - Clone repository to `~/quality-tracker-frontend`
+   - Install dependencies
+   - Build production bundle
+   - Deploy to `/var/www/html`
+   - Reload Nginx
+
+### Manual Deployment
+
+See [DEPLOYMENT_SETUP.md](./DEPLOYMENT_SETUP.md) for detailed manual deployment instructions.
+
+### Docker Deployment
+
 ```bash
-npm run dev
-```
-
-This will start:
-- Frontend at http://localhost:5173
-- Webhook Server at http://localhost:3001
-- API Server at http://localhost:3002
-
-**Start services individually:**
-```bash
-npm run dev:frontend  # Frontend only
-npm run dev:backend   # Backend webhook server
-npm run dev:api       # Backend API server
-```
-
-### Production Build
-
-**Build frontend:**
-```bash
-npm run build
-```
-
-**Start backend servers:**
-```bash
-npm run start:backend    # Both servers via PM2
-npm run start:api        # API server only
-```
-
-## 🐳 Docker Deployment
-
-### Using Docker Compose (Recommended)
-
-**Production:**
-```bash
+# Production
 cd docker
 docker-compose up -d
-```
 
-**Development:**
-```bash
-cd docker
+# Development
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 
-**Access services:**
-- Frontend: http://localhost:80
-- API Server: http://localhost:3002
-- Webhook Server: http://localhost:3001
-- PostgreSQL: localhost:5432
-
-**Stop services:**
-```bash
-docker-compose down
-```
-
-**View logs:**
-```bash
-docker-compose logs -f
-```
+See [DOCKER_SETUP.md](./DOCKER_SETUP.md) for Docker configuration details.
 
 ## 📝 Available Scripts
 
-### Root Level Commands
-
+### Development
 | Command | Description |
 |---------|-------------|
 | `npm run dev` | Start both frontend and backend in dev mode |
 | `npm run dev:frontend` | Start frontend dev server (port 5173) |
-| `npm run dev:backend` | Start backend webhook server in dev mode |
-| `npm run dev:api` | Start backend API server in dev mode |
+| `npm run dev:backend` | Start backend webhook server |
+| `npm run dev:api` | Start backend API server |
+
+### Production
+| Command | Description |
+|---------|-------------|
 | `npm run build` | Build frontend for production |
-| `npm run build:all` | Build all packages |
 | `npm run start:backend` | Start backend servers with PM2 |
-| `npm run start:api` | Start API server only |
-| `npm run lint` | Run linting on all packages |
-| `npm run test` | Run tests on all packages |
+| `./scripts/deploy-backend.sh` | Deploy backend to production |
+| `./scripts/deploy-frontend.sh` | Deploy frontend to production |
+
+### Database
+| Command | Description |
+|---------|-------------|
+| `./scripts/setup-database.sh` | Automated database setup |
 | `npm run db:test` | Test database connection |
 | `npm run db:seed` | Seed database with sample data |
-| `npm run db:migrate` | Run database migrations |
 
-## 🔧 Technology Stack
+## 🔧 Configuration
 
-### Frontend
-- React 19.0.0
-- Vite 6.2.0
-- TailwindCSS 3.3.5
-- React Router 7.3.0
-- Recharts 2.15.1
-- Socket.io Client 4.8.1
-- Axios 1.6.8
-- Octokit (GitHub API)
+### Environment Variables
 
-### Backend
-- Node.js 16+
-- Express 4.21.2
-- PostgreSQL (pg 8.16.3)
-- Socket.io 4.8.1
-- JWT (jsonwebtoken 9.0.2)
-- PM2 (process management)
+The project uses `.env` files for configuration:
 
-### DevOps
-- Docker & Docker Compose
-- Nginx (production frontend)
-- npm Workspaces (monorepo)
-- concurrently (parallel scripts)
-
-## 📊 Database Schema
-
-PostgreSQL database with **19 tables**:
-- User management (`users`, `workspaces`, `projects`)
-- Requirements (`requirements`, `versions`)
-- Test management (`test_cases`, `test_suites`, `test_executions`)
-- Traceability (`requirement_test_mapping`)
-- Quality (`quality_gates`, `risk_assessments`)
-- Releases (`releases`, `release_requirements`)
-- Audit (`webhook_logs`, `audit_logs`)
-
-## 🔐 Environment Variables
-
-**Frontend (.env):**
+**Backend** (`packages/backend/.env`):
 ```env
-VITE_API_URL=http://localhost:3002
-REACT_APP_WEBHOOK_URL=http://localhost:3001
-REACT_APP_BACKEND_ENABLED=true
+NODE_ENV=production
+PORT=3001              # Webhook server port
+API_PORT=3002          # API server port
+HOST=0.0.0.0
+
+# Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=quality_tracker_db
+DB_USER=quality_tracker_user
+DB_PASSWORD=your_secure_password
+
+# Frontend URLs (for CORS)
+FRONTEND_URL=http://your-domain.com
 ```
 
-**Backend (.env):**
+**Frontend** (`packages/frontend/.env`):
 ```env
-NODE_ENV=development
-API_PORT=3002
-PORT=3001
-DB_HOST=localhost
-DB_NAME=quality_tracker_db
-DB_USER=your_db_user
-DB_PASSWORD=your_db_password
+VITE_API_URL=http://your-domain.com/api
+REACT_APP_WEBHOOK_URL=http://your-domain.com
+REACT_APP_BACKEND_ENABLED=true
 ```
 
 See `.env.example` files for all available options.
 
+## 📊 Database Schema
+
+PostgreSQL database with 19 tables:
+- User management (users, workspaces, projects)
+- Requirements tracking (requirements, versions)
+- Test management (test_cases, test_suites, test_executions)
+- Traceability (requirement_test_mapping)
+- Quality metrics (quality_gates, risk_assessments)
+- Releases (releases, release_requirements)
+- Audit logs (webhook_logs, audit_logs)
+
 ## 📚 Documentation
 
-- [Test Depth Factor (TDF)](./docs/ABOUT-TDF.md) - Understanding the quality metric
-- [API Documentation](./docs/API.md) - REST API endpoints _(coming soon)_
-- [Database Schema](./docs/DATABASE.md) - Database structure _(coming soon)_
+- [DEPLOYMENT_SETUP.md](./DEPLOYMENT_SETUP.md) - Detailed deployment guide
+- [DOCKER_SETUP.md](./DOCKER_SETUP.md) - Docker configuration
+- [QUICK_START.md](./QUICK_START.md) - Quick start guide
+- [docs/ABOUT-TDF.md](./docs/ABOUT-TDF.md) - Test Depth Factor explained
 
-## 🎨 Customizing the Application
+## 🔒 Security
 
-### Adding Real Data
+- **Never commit `.env` files** - They contain sensitive passwords
+- **Use strong database passwords** - At least 16 characters
+- **Keep dependencies updated** - Run `npm audit` regularly
+- **Configure firewall** - Only expose necessary ports
+- **Use HTTPS** - Configure SSL certificates for production
 
-Replace sample data in `packages/frontend/src/data/`:
-- `requirements.js`: Your project requirements
-- `testcases.js`: Your test cases
-- `versions.js`: Release versions
-- `mapping.js`: Requirement-test relationships
+## 🛠️ Troubleshooting
 
-### Customizing Test Depth Factor
+### Services not starting
+```bash
+# Check PM2 logs
+pm2 logs
 
-Modify `packages/frontend/src/utils/coverage.js` to adjust TDF calculation based on your needs.
+# Check PM2 status
+pm2 status
 
-## 🛣️ Planned Enhancements
+# Restart services
+pm2 restart all
+```
 
-- [ ] User authentication and RBAC
-- [ ] Advanced test case editor
-- [ ] CI/CD integration (Jenkins, CircleCI, GitHub Actions)
-- [ ] Export to PDF/Excel
-- [ ] Historical trend analysis
-- [ ] Mobile responsive dashboard
-- [ ] API documentation (Swagger/OpenAPI)
-- [ ] Unit and integration tests
+### Database connection failed
+```bash
+# Check PostgreSQL is running
+sudo systemctl status postgresql
+
+# Test connection
+node packages/backend/database/test-connection.js
+```
+
+### Build errors
+```bash
+# Clean and reinstall
+rm -rf node_modules package-lock.json
+npm install
+
+# Clear PM2
+pm2 delete all
+pm2 save
+```
 
 ## 🤝 Contributing
 
@@ -316,5 +289,5 @@ This project is licensed under the MIT License.
 
 - Built with React 19 and modern web technologies
 - Follows monorepo best practices with npm workspaces
-- Production-ready Docker configuration
+- Production-ready with automated deployment scripts
 - Inspired by industry standard quality management practices
