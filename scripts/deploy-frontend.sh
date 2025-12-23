@@ -134,6 +134,29 @@ npm install || error_exit "npm install failed"
 success "Dependencies installed"
 
 # ==============================================================================
+# STEP 3.5: ENVIRONMENT CONFIGURATION
+# ==============================================================================
+section "STEP 3.5: Environment Configuration"
+
+# Check for .env file in frontend package
+if [ ! -f "packages/frontend/.env" ]; then
+    warning ".env file not found in packages/frontend"
+
+    if [ -f "packages/frontend/.env.example" ]; then
+        info "Creating .env from .env.example..."
+        cp packages/frontend/.env.example packages/frontend/.env
+        success ".env file created from template"
+        warning "Please edit ~/quality-tracker-frontend/packages/frontend/.env with production URLs"
+        warning "Update VITE_API_URL and REACT_APP_API_URL to your server IP"
+    else
+        warning "No .env.example found - you may need to create .env manually"
+    fi
+else
+    success ".env file exists"
+    info "Using configuration from packages/frontend/.env"
+fi
+
+# ==============================================================================
 # STEP 4: BUILD FRONTEND
 # ==============================================================================
 section "STEP 4: Building Frontend"
