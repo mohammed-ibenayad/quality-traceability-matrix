@@ -1,7 +1,29 @@
 import axios from 'axios';
 
-// Get API URL from environment variable or use default
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+// Get API URL with production environment detection
+const getApiBaseUrl = () => {
+  // Check if we're in production (deployed)
+  const isProduction = window.location.hostname !== 'localhost' &&
+                       window.location.hostname !== '127.0.0.1';
+
+  if (isProduction) {
+    // In production, use nginx proxy (no port - goes through nginx)
+    return `http://${window.location.hostname}/api`;
+  }
+
+  // For local development
+  // Try Vite variable first (for Vite builds)
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+
+  // Default fallback for development
+  return 'http://localhost:3002';
+};
+
+const API_URL = getApiBaseUrl();
+
+console.log('🔧 API Client initialized with base URL:', API_URL);
 
 // Create axios instance with API base URL
 const apiClient = axios.create({
