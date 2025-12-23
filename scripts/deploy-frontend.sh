@@ -5,6 +5,11 @@
 # Usage: ./deploy-frontend.sh [branch-name]
 # Example: ./deploy-frontend.sh feature/new-import
 # If no branch provided, uses current branch
+#
+# Environment Variables:
+#   REPO_URL - Repository URL (default: https://github.com/mohammed-ibenayad/asaltech-quality-tracker.git)
+#
+# If the frontend directory doesn't exist, it will be automatically cloned.
 # ==============================================================================
 
 set -e  # Exit on any error
@@ -18,6 +23,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Configuration
+REPO_URL="${REPO_URL:-https://github.com/mohammed-ibenayad/asaltech-quality-tracker.git}"
 FRONTEND_DIR="$HOME/quality-tracker-frontend"
 DEPLOY_DIR="/var/www/html"
 LOG_FILE="$HOME/deploy-frontend-$(date +%Y%m%d_%H%M%S).log"
@@ -56,18 +62,22 @@ info() {
 # ==============================================================================
 section "STEP 0: Initialization"
 
-# Determine branch to deploy
-DEPLOY_BRANCH="${1:-$(git -C "$FRONTEND_DIR" branch --show-current)}"
-info "Target directory: $FRONTEND_DIR"
-info "Deploy branch: $DEPLOY_BRANCH"
-info "Log file: $LOG_FILE"
-
-# Check if directory exists
+# Check if directory exists, clone if not
 if [ ! -d "$FRONTEND_DIR" ]; then
-    error_exit "Frontend directory not found: $FRONTEND_DIR"
+    warning "Frontend directory not found: $FRONTEND_DIR"
+    info "Cloning repository from: $REPO_URL"
+
+    git clone "$REPO_URL" "$FRONTEND_DIR" || error_exit "Failed to clone repository"
+    success "Repository cloned successfully"
 fi
 
 cd "$FRONTEND_DIR" || error_exit "Cannot change to frontend directory"
+
+# Determine branch to deploy
+DEPLOY_BRANCH="${1:-$(git branch --show-current)}"
+info "Target directory: $FRONTEND_DIR"
+info "Deploy branch: $DEPLOY_BRANCH"
+info "Log file: $LOG_FILE"
 
 # ==============================================================================
 # STEP 1: GIT STATUS CHECK (INFORMATIONAL ONLY)

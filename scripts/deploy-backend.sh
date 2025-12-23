@@ -5,6 +5,11 @@
 # Usage: ./deploy-backend.sh [branch-name]
 # Example: ./deploy-backend.sh feature/new-api
 # If no branch provided, uses current branch
+#
+# Environment Variables:
+#   REPO_URL - Repository URL (default: https://github.com/mohammed-ibenayad/asaltech-quality-tracker.git)
+#
+# If the backend directory doesn't exist, it will be automatically cloned.
 # ==============================================================================
 
 set -e  # Exit on any error
@@ -18,6 +23,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Configuration
+REPO_URL="${REPO_URL:-https://github.com/mohammed-ibenayad/asaltech-quality-tracker.git}"
 BACKEND_DIR="$HOME/quality-tracker-backend"
 LOG_FILE="$HOME/deploy-backend-$(date +%Y%m%d_%H%M%S).log"
 PM2_ECOSYSTEM="$BACKEND_DIR/ecosystem.config.js"
@@ -56,18 +62,22 @@ info() {
 # ==============================================================================
 section "STEP 0: Initialization"
 
-# Determine branch to deploy
-DEPLOY_BRANCH="${1:-$(git -C "$BACKEND_DIR" branch --show-current)}"
-info "Target directory: $BACKEND_DIR"
-info "Deploy branch: $DEPLOY_BRANCH"
-info "Log file: $LOG_FILE"
-
-# Check if directory exists
+# Check if directory exists, clone if not
 if [ ! -d "$BACKEND_DIR" ]; then
-    error_exit "Backend directory not found: $BACKEND_DIR"
+    warning "Backend directory not found: $BACKEND_DIR"
+    info "Cloning repository from: $REPO_URL"
+
+    git clone "$REPO_URL" "$BACKEND_DIR" || error_exit "Failed to clone repository"
+    success "Repository cloned successfully"
 fi
 
 cd "$BACKEND_DIR" || error_exit "Cannot change to backend directory"
+
+# Determine branch to deploy
+DEPLOY_BRANCH="${1:-$(git branch --show-current)}"
+info "Target directory: $BACKEND_DIR"
+info "Deploy branch: $DEPLOY_BRANCH"
+info "Log file: $LOG_FILE"
 
 # ==============================================================================
 # STEP 1: GIT STATUS CHECK (INFORMATIONAL ONLY)
