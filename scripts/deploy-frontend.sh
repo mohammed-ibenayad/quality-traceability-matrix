@@ -18,7 +18,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Configuration
-FRONTEND_DIR="$HOME/quality-traceability-matrix"
+FRONTEND_DIR="$HOME/quality-tracker-frontend"
 DEPLOY_DIR="/var/www/html"
 LOG_FILE="$HOME/deploy-frontend-$(date +%Y%m%d_%H%M%S).log"
 
