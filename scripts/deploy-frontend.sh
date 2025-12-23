@@ -73,9 +73,12 @@ fi
 
 cd "$FRONTEND_DIR" || error_exit "Cannot change to frontend directory"
 
+# Navigate to frontend package in monorepo
+cd packages/frontend || error_exit "Cannot find packages/frontend directory - is this the quality tracker monorepo?"
+
 # Determine branch to deploy
-DEPLOY_BRANCH="${1:-$(git branch --show-current)}"
-info "Target directory: $FRONTEND_DIR"
+DEPLOY_BRANCH="${1:-$(git -C "$FRONTEND_DIR" branch --show-current)}"
+info "Target directory: $FRONTEND_DIR/packages/frontend"
 info "Deploy branch: $DEPLOY_BRANCH"
 info "Log file: $LOG_FILE"
 
@@ -84,13 +87,13 @@ info "Log file: $LOG_FILE"
 # ==============================================================================
 section "STEP 1: Checking Git Status"
 
-info "Current branch: $(git branch --show-current)"
-info "Last local commit: $(git log -1 --oneline)"
+info "Current branch: $(git -C "$FRONTEND_DIR" branch --show-current)"
+info "Last local commit: $(git -C "$FRONTEND_DIR" log -1 --oneline)"
 
 # Show uncommitted changes if any (but don't block deployment)
-if ! git diff-index --quiet HEAD --; then
+if ! git -C "$FRONTEND_DIR" diff-index --quiet HEAD --; then
     warning "Local uncommitted changes detected (will be discarded):"
-    git status --short
+    git -C "$FRONTEND_DIR" status --short
     info "These changes will be overwritten by force pull"
 else
     success "Working directory is clean"
@@ -102,20 +105,20 @@ fi
 section "STEP 2: Force Pulling Latest Changes"
 
 info "Fetching latest changes from remote..."
-git fetch origin || error_exit "Failed to fetch from remote"
+git -C "$FRONTEND_DIR" fetch origin || error_exit "Failed to fetch from remote"
 
 info "Force checking out branch: $DEPLOY_BRANCH"
-git checkout -f "$DEPLOY_BRANCH" || error_exit "Failed to checkout branch $DEPLOY_BRANCH"
+git -C "$FRONTEND_DIR" checkout -f "$DEPLOY_BRANCH" || error_exit "Failed to checkout branch $DEPLOY_BRANCH"
 
 info "Resetting to origin/$DEPLOY_BRANCH (discarding local changes)..."
-git reset --hard "origin/$DEPLOY_BRANCH" || error_exit "Failed to reset to remote branch"
+git -C "$FRONTEND_DIR" reset --hard "origin/$DEPLOY_BRANCH" || error_exit "Failed to reset to remote branch"
 
 # Clean untracked files except .env and node_modules
 info "Cleaning untracked files (keeping .env)..."
-git clean -fd -e .env -e node_modules || warning "Clean failed (continuing anyway)"
+git -C "$FRONTEND_DIR" clean -fd -e .env -e node_modules || warning "Clean failed (continuing anyway)"
 
 success "Code updated successfully (forced)"
-info "Current commit: $(git log -1 --oneline)"
+info "Current commit: $(git -C "$FRONTEND_DIR" log -1 --oneline)"
 
 # ==============================================================================
 # STEP 3: INSTALL DEPENDENCIES
@@ -228,9 +231,10 @@ echo ""
 success "Frontend deployed successfully!"
 echo ""
 info "Branch: $DEPLOY_BRANCH"
-info "Commit: $(git log -1 --oneline)"
+info "Commit: $(git -C "$FRONTEND_DIR" log -1 --oneline)"
 info "Build size: $BUILD_SIZE"
 info "Deployed to: $DEPLOY_DIR"
+info "Source: $FRONTEND_DIR/packages/frontend"
 info "Backup location: $BACKUP_DIR"
 echo ""
 log "🌐 Access your application at:" "$GREEN"

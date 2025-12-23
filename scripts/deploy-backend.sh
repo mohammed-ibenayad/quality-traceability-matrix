@@ -26,7 +26,7 @@ NC='\033[0m' # No Color
 REPO_URL="${REPO_URL:-https://github.com/mohammed-ibenayad/asaltech-quality-tracker.git}"
 BACKEND_DIR="$HOME/quality-tracker-backend"
 LOG_FILE="$HOME/deploy-backend-$(date +%Y%m%d_%H%M%S).log"
-PM2_ECOSYSTEM="$BACKEND_DIR/ecosystem.config.js"
+PM2_ECOSYSTEM="$BACKEND_DIR/packages/backend/ecosystem.config.js"
 
 # Functions
 log() {
@@ -73,9 +73,12 @@ fi
 
 cd "$BACKEND_DIR" || error_exit "Cannot change to backend directory"
 
+# Navigate to backend package in monorepo
+cd packages/backend || error_exit "Cannot find packages/backend directory - is this the quality tracker monorepo?"
+
 # Determine branch to deploy
-DEPLOY_BRANCH="${1:-$(git branch --show-current)}"
-info "Target directory: $BACKEND_DIR"
+DEPLOY_BRANCH="${1:-$(git -C "$BACKEND_DIR" branch --show-current)}"
+info "Target directory: $BACKEND_DIR/packages/backend"
 info "Deploy branch: $DEPLOY_BRANCH"
 info "Log file: $LOG_FILE"
 
@@ -84,13 +87,13 @@ info "Log file: $LOG_FILE"
 # ==============================================================================
 section "STEP 1: Checking Git Status"
 
-info "Current branch: $(git branch --show-current)"
-info "Last local commit: $(git log -1 --oneline)"
+info "Current branch: $(git -C "$BACKEND_DIR" branch --show-current)"
+info "Last local commit: $(git -C "$BACKEND_DIR" log -1 --oneline)"
 
 # Show uncommitted changes if any (but don't block deployment)
-if ! git diff-index --quiet HEAD --; then
+if ! git -C "$BACKEND_DIR" diff-index --quiet HEAD --; then
     warning "Local uncommitted changes detected (will be discarded):"
-    git status --short
+    git -C "$BACKEND_DIR" status --short
     info "These changes will be overwritten by force pull"
 else
     success "Working directory is clean"
@@ -102,20 +105,20 @@ fi
 section "STEP 2: Force Pulling Latest Changes"
 
 info "Fetching latest changes from remote..."
-git fetch origin || error_exit "Failed to fetch from remote"
+git -C "$BACKEND_DIR" fetch origin || error_exit "Failed to fetch from remote"
 
 info "Force checking out branch: $DEPLOY_BRANCH"
-git checkout -f "$DEPLOY_BRANCH" || error_exit "Failed to checkout branch $DEPLOY_BRANCH"
+git -C "$BACKEND_DIR" checkout -f "$DEPLOY_BRANCH" || error_exit "Failed to checkout branch $DEPLOY_BRANCH"
 
 info "Resetting to origin/$DEPLOY_BRANCH (discarding local changes)..."
-git reset --hard "origin/$DEPLOY_BRANCH" || error_exit "Failed to reset to remote branch"
+git -C "$BACKEND_DIR" reset --hard "origin/$DEPLOY_BRANCH" || error_exit "Failed to reset to remote branch"
 
 # Clean untracked files except .env and node_modules
 info "Cleaning untracked files (keeping .env)..."
-git clean -fd -e .env -e node_modules || warning "Clean failed (continuing anyway)"
+git -C "$BACKEND_DIR" clean -fd -e .env -e node_modules || warning "Clean failed (continuing anyway)"
 
 success "Code updated successfully (forced)"
-info "Current commit: $(git log -1 --oneline)"
+info "Current commit: $(git -C "$BACKEND_DIR" log -1 --oneline)"
 
 # ==============================================================================
 # STEP 3: INSTALL DEPENDENCIES
@@ -230,8 +233,8 @@ echo ""
 success "Backend deployed successfully!"
 echo ""
 info "Branch: $DEPLOY_BRANCH"
-info "Commit: $(git log -1 --oneline)"
-info "Deployed to: $BACKEND_DIR"
+info "Commit: $(git -C "$BACKEND_DIR" log -1 --oneline)"
+info "Deployed to: $BACKEND_DIR/packages/backend"
 echo ""
 log "📊 Service Status:" "$GREEN"
 pm2 status | grep quality-tracker
