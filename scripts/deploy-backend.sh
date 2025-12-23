@@ -224,25 +224,33 @@ info "Current PM2 status:"
 pm2 status
 
 # Check if services are actually running (not crash-looping)
-# Use pm2 jlist to get JSON output and parse it properly
-WEBHOOK_STATUS=$(pm2 jlist | jq -r '.[] | select(.name=="quality-tracker-webhook") | .pm2_env.status' 2>/dev/null || echo "unknown")
-API_STATUS=$(pm2 jlist | jq -r '.[] | select(.name=="quality-tracker-api") | .pm2_env.status' 2>/dev/null || echo "unknown")
+# Try to use pm2 jlist, but don't fail if PM2 communication is broken
+info "Checking service status..."
+PM2_WORKING=true
+WEBHOOK_STATUS=$(pm2 jlist 2>/dev/null | jq -r '.[] | select(.name=="quality-tracker-webhook") | .pm2_env.status' 2>/dev/null || echo "unknown")
+API_STATUS=$(pm2 jlist 2>/dev/null | jq -r '.[] | select(.name=="quality-tracker-api") | .pm2_env.status' 2>/dev/null || echo "unknown")
 
-info "Webhook service status: $WEBHOOK_STATUS"
-info "API service status: $API_STATUS"
+if [ "$WEBHOOK_STATUS" = "unknown" ] || [ "$API_STATUS" = "unknown" ]; then
+    warning "PM2 status detection failed (PM2 communication issue)"
+    info "Will verify services using HTTP health checks instead"
+    PM2_WORKING=false
+else
+    info "Webhook service status: $WEBHOOK_STATUS"
+    info "API service status: $API_STATUS"
 
-if [ "$WEBHOOK_STATUS" != "online" ]; then
-    warning "Webhook service is not online (status: $WEBHOOK_STATUS)"
-    info "Showing last 30 lines of webhook server logs:"
-    pm2 logs quality-tracker-webhook --lines 30 --nostream || true
-    error_exit "Webhook server is not running properly. Check logs above."
-fi
+    if [ "$WEBHOOK_STATUS" != "online" ]; then
+        warning "Webhook service is not online (status: $WEBHOOK_STATUS)"
+        info "Showing last 30 lines of webhook server logs:"
+        pm2 logs quality-tracker-webhook --lines 30 --nostream || true
+        error_exit "Webhook server is not running properly. Check logs above."
+    fi
 
-if [ "$API_STATUS" != "online" ]; then
-    warning "API service is not online (status: $API_STATUS)"
-    info "Showing last 30 lines of API server logs:"
-    pm2 logs quality-tracker-api --lines 30 --nostream || true
-    error_exit "API server is not running properly. Check logs above."
+    if [ "$API_STATUS" != "online" ]; then
+        warning "API service is not online (status: $API_STATUS)"
+        info "Showing last 30 lines of API server logs:"
+        pm2 logs quality-tracker-api --lines 30 --nostream || true
+        error_exit "API server is not running properly. Check logs above."
+    fi
 fi
 
 # Test webhook server
